@@ -1,5 +1,5 @@
 fastapi
 uvicorn
 websockets_proxy
-loguru
 fake_useragent
+loguru
