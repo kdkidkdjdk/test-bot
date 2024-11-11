@@ -1,18 +1,30 @@
 async function fetchData() {
     const response = await fetch('/client/');
     const data = await response.json();
-    const tbody = document.getElementById("data-table").getElementsByTagName("tbody")[0];
-    tbody.innerHTML = ""; 
+    const tbody = document.getElementById("data-table-body");
+    const onlineCount = document.getElementById("onlineCount");
+    const allCount = document.getElementById("allCount");
 
-    data.clients.forEach((user, index) => {
-        const row = tbody.insertRow();
-        row.insertCell(0).innerText = index + 1;
-        row.insertCell(1).innerText = user.client_id;
-        row.insertCell(2).innerText = user.status;
-        row.insertCell(3).innerHTML = `<button onclick="deleteClient('${user.client_id}')">删除</button>`;
+    tbody.innerHTML = "";
+    onlineCount.textContent = data.clients.filter(c => c.status === true).length;
+    allCount.textContent = data.clients.length;
+
+    data.clients.forEach((client, index) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${client.user_id}</td>
+            <td>${client.proxy}</td>
+            <td class="status">${client.status ? "已连接" : "断开"}</td>
+            <td>
+                <button onclick="showLogs('${client.client_id}')">日志</button>
+                <button onclick="deleteUser('${client.client_id}')">删除</button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
     });
-
-    document.getElementById("onlineCount").innerText = data.clients.length;
 }
 
 async function addUser() {
@@ -28,7 +40,7 @@ async function addUser() {
     }
 }
 
-async function deleteClient(client_id) {
+async function deleteUser(client_id) {
     await fetch(`/client/${client_id}`, { method: 'DELETE' });
     fetchData();
 }
@@ -39,17 +51,32 @@ async function deleteAllUser() {
 }
 
 async function uploadFile() {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.onchange = async (event) => {
-        const file = event.target.files[0];
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".txt";
+    input.onchange = async () => {
+        const file = input.files[0];
         const formData = new FormData();
         formData.append("file", file);
 
-        await fetch('/upload/', { method: 'POST', body: formData });
+        await fetch('/upload/', {
+            method: 'POST',
+            body: formData
+        });
         fetchData();
     };
-    fileInput.click();
+    input.click();
+}
+
+async function showLogs(client_id) {
+    const response = await fetch(`/client/${client_id}/logs`);
+    const data = await response.json();
+    document.getElementById("logText").textContent = data.logs.join("\n");
+    document.getElementById("logsModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("logsModal").style.display = "none";
 }
 
 fetchData();
