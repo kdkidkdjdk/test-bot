@@ -5,3 +5,4 @@ jinja2
 starlette
 fake_useragent
 websockets_proxy
+python-multipart
