@@ -2,52 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Proxy Manager</title>
-    <script>
-        async function addProxies() {
-            const proxies = document.getElementById("proxyList").value.split("\n");
-            const response = await fetch("/add_proxies", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({proxies})
-            });
-            const result = await response.json();
-            alert(`Added ${result.total_proxies} proxies`);
-        }
-
-        async function startConnections() {
-            await fetch("/start_connections");
-            updateStatus();
-        }
-
-        async function updateStatus() {
-            const response = await fetch("/status");
-            const result = await response.json();
-            document.getElementById("total").innerText = result.total;
-            document.getElementById("connected").innerText = result.connected;
-            document.getElementById("failed").innerText = result.failed;
-
-            let list = document.getElementById("statusList");
-            list.innerHTML = "";
-            for (const [proxy, status] of Object.entries(result.connections)) {
-                const item = document.createElement("li");
-                item.textContent = `${proxy}: ${status}`;
-                list.appendChild(item);
-            }
-        }
-
-        setInterval(updateStatus, 5000);
-    </script>
+    <title>GetGrass WebUI</title>
+    <style>
+        body { background-color: black; color: white; font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #555; text-align: center; }
+        th { background-color: #333; }
+        .connected { color: green; }
+    </style>
 </head>
 <body>
-    <h1>Proxy Manager</h1>
-    <textarea id="proxyList" placeholder="Enter proxies in 'user_id--proxy_url' format"></textarea>
-    <button onclick="addProxies()">Add Proxies</button>
-    <button onclick="startConnections()">Start Connections</button>
-    <h2>Status</h2>
-    <p>Total: <span id="total">0</span></p>
-    <p>Connected: <span id="connected">0</span></p>
-    <p>Failed: <span id="failed">0</span></p>
-    <ul id="statusList"></ul>
+    <h1>GetGrass WebUI</h1>
+    <button onclick="addAccount()">添加账户</button>
+    <button onclick="clearAccounts()">清空账户</button>
+    <button onclick="uploadFile()">上传文件</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>编号</th>
+                <th>UserID</th>
+                <th>代理</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="accountTableBody"></tbody>
+    </table>
+
+    <script>
+        async function loadAccounts() {
+            const response = await fetch('/api/accounts');
+            const data = await response.json();
+            const tableBody = document.getElementById('accountTableBody');
+            tableBody.innerHTML = '';
+
+            data.accounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${account.id}</td>
+                    <td>${account.user_id}</td>
+                    <td>${account.proxy}</td>
+                    <td class="${account.status === '已连接' ? 'connected' : ''}">${account.status}</td>
+                    <td>
+                        <button onclick="showLogs(${account.id})">日志</button>
+                        <button onclick="deleteAccount(${account.id})">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function addAccount() {
+            alert("添加账户功能尚未实现");
+        }
+
+        function clearAccounts() {
+            alert("清空账户功能尚未实现");
+        }
+
+        function uploadFile() {
+            alert("上传文件功能尚未实现");
+        }
+
+        function showLogs(id) {
+            alert("显示日志功能尚未实现，账户ID: " + id);
+        }
+
+        function deleteAccount(id) {
+            alert("删除账户功能尚未实现，账户ID: " + id);
+        }
+
+        // 初始化加载账户数据
+        loadAccounts();
+    </script>
 </body>
 </html>
