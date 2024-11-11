@@ -5,7 +5,7 @@ services:
     build: .
     container_name: fastapi_app_container
     ports:
-      - "8000:8000"
+      - "8000:8000"  # 将容器的8000端口映射到服务器的8000端口
     volumes:
-      - ./proxies.txt:/mnt/data/proxies.txt
+      - ./proxies.txt:/app/proxies.txt  # 挂载代理文件
     restart: unless-stopped
