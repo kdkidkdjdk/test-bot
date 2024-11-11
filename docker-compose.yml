@@ -1,0 +1,7 @@
+version: '3'
+services:
+  getgrass:
+    build: .
+    ports:
+      - "8000:8000"  # 映射容器的 8000 端口到服务器的 8000 端口
+    restart: always
