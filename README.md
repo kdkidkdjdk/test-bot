@@ -1,5 +1,1 @@
-安装依赖
-pip install -r requirements.txt
-
-运行主程序
-python3 bot.py
+git clone https://github.com/kdkidkdjdk/GetGrassWebUI.git && cd GetGrassWebUI
