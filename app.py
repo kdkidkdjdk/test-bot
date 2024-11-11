@@ -1,3 +1,4 @@
+from flask import Flask, render_template, request, jsonify
 import asyncio
 import json
 import random
@@ -7,7 +8,6 @@ import re
 from websockets_proxy import Proxy, proxy_connect
 from fake_useragent import UserAgent
 from loguru import logger
-from flask import Flask, render_template, request, jsonify
 from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
@@ -117,4 +117,4 @@ def status():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    app.run(host="0.0.0.0", port=8000)  # 设置 Flask 监听 0.0.0.0 和 8000 端口
