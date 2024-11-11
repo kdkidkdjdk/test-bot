@@ -4,7 +4,7 @@ import random
 import ssl
 import uuid
 import time
-from fastapi import FastAPI, WebSocket, APIRouter, BackgroundTasks
+from fastapi import FastAPI, WebSocket, APIRouter, BackgroundTasks, UploadFile, File, HTTPException
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
@@ -13,8 +13,8 @@ from loguru import logger
 from typing import Dict, List, Optional
 from websockets_proxy import Proxy, proxy_connect
 from fake_useragent import UserAgent
+import re
 
-# 导入 utils.py 中的函数
 from app.utils import add_nstproxy_appid, validate_user_id, validate_proxy_url
 
 app = FastAPI()
@@ -76,15 +76,13 @@ async def index(request: Request):
 
 @app.post("/client/")
 async def add_client(user_id: str, proxy_url: str, background_tasks: BackgroundTasks):
-    # 验证 user_id 和 proxy_url 格式
     if not validate_user_id(user_id):
         return {"error": "Invalid user ID format"}
-    if not validate_proxy_url(proxy_url):
+    if proxy_url and not validate_proxy_url(proxy_url):
         return {"error": "Invalid proxy URL format"}
 
     client_id = str(uuid.uuid4())
-    # 使用 utils.py 中的函数添加 appid 到代理
-    proxy = add_nstproxy_appid(proxy_url)
+    proxy = add_nstproxy_appid(proxy_url) if proxy_url else proxy_url
     task = asyncio.create_task(connect_to_wss(proxy, user_id))
     all_clients[client_id] = task
     background_tasks.add_task(task)
@@ -98,6 +96,39 @@ async def delete_client(client_id: str):
         return {"message": "Client removed successfully"}
     return {"error": "Client not found"}
 
+@app.delete("/client/")
+async def delete_all_clients():
+    for client_id, task in list(all_clients.items()):
+        task.cancel()
+        all_clients.pop(client_id)
+    return {"message": "All clients removed successfully"}
+
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    content = await file.read()
+    lines = content.decode().splitlines()
+
+    added_clients = []
+    for line in lines:
+        if "==" in line:
+            user_id, proxy_url = line.split("==")
+            proxy_url = proxy_url.strip()
+        else:
+            user_id, proxy_url = line.strip(), None
+
+        if not validate_user_id(user_id):
+            continue
+        if proxy_url and not validate_proxy_url(proxy_url):
+            continue
+
+        client_id = str(uuid.uuid4())
+        proxy = add_nstproxy_appid(proxy_url) if proxy_url else None
+        task = asyncio.create_task(connect_to_wss(proxy, user_id))
+        all_clients[client_id] = task
+        added_clients.append(client_id)
+
+    return {"message": "File processed", "added_clients": added_clients}
+
 @app.get("/client/")
 async def list_clients():
     client_list = [{"client_id": client_id, "status": task.done()} for client_id, task in all_clients.items()]
@@ -105,4 +136,4 @@ async def list_clients():
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
