@@ -1,4 +1,5 @@
-flask
-fake_useragent
+fastapi
+uvicorn
+websockets_proxy
 loguru
-websockets
+fake_useragent
