@@ -15,7 +15,7 @@ from websockets_proxy import Proxy, proxy_connect
 from fake_useragent import UserAgent
 
 # 导入 utils.py 中的函数
-from utils import add_nstproxy_appid, validate_user_id, validate_proxy_url
+from app.utils import add_nstproxy_appid, validate_user_id, validate_proxy_url
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
