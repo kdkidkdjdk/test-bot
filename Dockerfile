@@ -10,8 +10,8 @@ COPY . .
 # 安装所需的 Python 依赖
 RUN pip install -r requirements.txt
 
-# 暴露所需端口
+# 暴露所需端口（假设 Web UI 在 8000 端口上运行）
 EXPOSE 8000
 
-# 定义启动命令
-CMD ["python", "getgrassDesktopBot.py"]
+# 定义启动命令，改为运行 app.py
+CMD ["python", "app.py"]
