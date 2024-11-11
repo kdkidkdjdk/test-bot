@@ -1,17 +1,17 @@
-# 使用官方 Python 镜像作为基础镜像
+# 使用 Python 3.9 作为基础镜像
 FROM python:3.9-slim
 
 # 设置工作目录
 WORKDIR /app
 
-# 将当前目录的内容复制到容器中
+# 复制项目文件到工作目录
 COPY . .
 
-# 安装所需的 Python 依赖
-RUN pip install -r requirements.txt
+# 安装必要的依赖
+RUN pip install --no-cache-dir fastapi uvicorn
 
-# 暴露所需端口（假设 Web UI 在 8000 端口上运行）
+# 暴露端口
 EXPOSE 8000
 
-# 定义启动命令，改为运行 app.py
-CMD ["python", "app.py"]
+# 运行 FastAPI 应用
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
