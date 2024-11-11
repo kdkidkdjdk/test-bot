@@ -1,1 +1,1 @@
-git clone https://github.com/kdkidkdjdk/GetGrassWebUI.git && cd GetGrassWebUI
+git clone https://github.com/kdkidkdjdk/test-bot.git && cd test-bot
