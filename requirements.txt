@@ -1,5 +1,3 @@
-asyncio
-json
 fake_useragent
 loguru
 websockets
