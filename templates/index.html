@@ -9,13 +9,10 @@
 <body>
     <div class="title">
         <h2>GetGrass WebUI - <span class="status" id="onlineCount">0</span>/<span id="allCount">0</span></h2>
-        <div>
-            <button onclick="addUser()">添加账号</button>
-            <button onclick="deleteAllUser()">清空账号</button>
-            <button onclick="uploadFile()">上传文件</button>
-        </div>
+        <button onclick="addUser()">添加账号</button>
+        <button onclick="deleteAllUsers()">清空账号</button>
+        <button onclick="uploadFile()">上传文件</button>
     </div>
-    
     <table id="data-table">
         <thead>
             <tr>
@@ -26,18 +23,10 @@
                 <th>操作</th>
             </tr>
         </thead>
-        <tbody id="data-table-body">
-            <!-- 动态添加数据 -->
+        <tbody>
+            <!-- 动态添加内容 -->
         </tbody>
     </table>
-
-    <div id="logsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <p id="logText"></p>
-        </div>
-    </div>
-
     <script src="/static/index.js"></script>
 </body>
 </html>
