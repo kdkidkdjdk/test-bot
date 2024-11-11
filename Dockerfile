@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # 安装必要的依赖
-RUN pip install --no-cache-dir fastapi uvicorn
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 暴露端口
 EXPOSE 8000
