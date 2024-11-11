@@ -1,48 +1,40 @@
-# main.py - FastAPI backend with WebSocket connections
-
-import asyncio
-from typing import Optional, Dict, List
-from pydantic import BaseModel
-from fastapi import FastAPI, WebSocket, BackgroundTasks, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse
-from starlette.requests import Request
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 import uuid
-import re
 
 app = FastAPI()
 
+# 临时存储客户端数据
 clients = {}
+
+# 静态文件和模板
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 class ClientData(BaseModel):
     user_id: str
-    proxy_url: Optional[str] = None
+    proxy_url: str = None
 
 @app.get("/", response_class=HTMLResponse)
-async def get_index(request: Request):
-    with open("templates/index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+async def read_root():
+    with open("templates/index.html") as f:
+        return f.read()
 
 @app.post("/client/")
-async def add_client(data: ClientData, background_tasks: BackgroundTasks):
+async def add_client(data: ClientData):
     client_id = str(uuid.uuid4())
     clients[client_id] = {"user_id": data.user_id, "proxy": data.proxy_url, "status": True}
-    return {"message": "Client added successfully", "client_id": client_id}
+    return {"message": "Client added successfully"}
 
-@app.get("/client/")
-async def list_clients():
-    return {"clients": [{"client_id": k, **v} for k, v in clients.items()]}
+@app.get("/clients/")
+async def get_clients():
+    return [{"user_id": client["user_id"], "proxy": client["proxy"], "status": client["status"]} for client in clients.values()]
 
-@app.delete("/client/{client_id}")
-async def delete_client(client_id: str):
-    if client_id in clients:
-        del clients[client_id]
-        return {"message": "Client deleted successfully"}
-    return {"error": "Client not found"}
-
-@app.delete("/client/")
-async def delete_all_clients():
+@app.post("/clear/")
+async def clear_clients():
     clients.clear()
-    return {"message": "All clients deleted successfully"}
+    return {"message": "All clients cleared"}
 
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
@@ -56,7 +48,10 @@ async def upload_file(file: UploadFile = File(...)):
         clients[client_id] = {"user_id": user_id, "proxy": proxy_url, "status": True}
     return {"message": "File processed successfully"}
 
-@app.get("/client/{client_id}/logs")
-async def get_logs(client_id: str):
-    # Placeholder for actual logs; currently returns dummy data
-    return {"logs": ["Log entry 1", "Log entry 2", "Log entry 3"]}
+@app.delete("/client/{user_id}")
+async def delete_client(user_id: str):
+    for client_id, client in list(clients.items()):
+        if client["user_id"] == user_id:
+            del clients[client_id]
+            return {"message": "Client deleted successfully"}
+    raise HTTPException(status_code=404, detail="Client not found")
