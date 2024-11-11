@@ -1,10 +1,8 @@
 async function fetchData() {
-    console.log("Fetching data...");
     const response = await fetch('/client/');
     const data = await response.json();
-    console.log("Received data:", data);  // 调试用，检查数据内容
     const tbody = document.getElementById("data-table").getElementsByTagName("tbody")[0];
-    tbody.innerHTML = "";  // 清空当前内容
+    tbody.innerHTML = ""; 
 
     data.clients.forEach((user, index) => {
         const row = tbody.insertRow();
@@ -17,19 +15,10 @@ async function fetchData() {
     document.getElementById("onlineCount").innerText = data.clients.length;
 }
 
-function viewLog(userId) {
-    document.getElementById("logText").innerText = `日志内容：${userId}`;
-    document.getElementById("logsModal").style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById("logsModal").style.display = "none";
-}
-
 async function addUser() {
     const user_id = prompt("请输入用户ID:");
-    const proxy_url = prompt("请输入代理URL:");
-    if (user_id && proxy_url) {
+    const proxy_url = prompt("请输入代理URL (可选):");
+    if (user_id) {
         await fetch('/client/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -45,11 +34,22 @@ async function deleteClient(client_id) {
 }
 
 async function deleteAllUser() {
-    alert("所有用户已清空（功能待实现）");
+    await fetch(`/client/`, { method: 'DELETE' });
+    fetchData();
 }
 
 async function uploadFile() {
-    alert("上传文件（功能待实现）");
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.onchange = async (event) => {
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        await fetch('/upload/', { method: 'POST', body: formData });
+        fetchData();
+    };
+    fileInput.click();
 }
 
 fetchData();
