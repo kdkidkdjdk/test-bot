@@ -1,3 +1,4 @@
+flask
 fake_useragent
 loguru
 websockets
