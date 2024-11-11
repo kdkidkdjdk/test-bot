@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+loguru
+jinja2
+starlette
+fake_useragent
+websockets_proxy
