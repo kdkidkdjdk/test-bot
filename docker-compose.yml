@@ -1,7 +1,11 @@
-version: '3'
+version: '3.8'
+
 services:
-  getgrass:
+  fastapi_app:
     build: .
+    container_name: fastapi_app_container
     ports:
-      - "8000:8000"  # 映射容器的 8000 端口到服务器的 8000 端口
-    restart: always
+      - "8000:8000"
+    volumes:
+      - ./proxies.txt:/mnt/data/proxies.txt
+    restart: unless-stopped
