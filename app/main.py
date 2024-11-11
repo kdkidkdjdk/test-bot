@@ -6,6 +6,7 @@ import uuid
 import time
 from fastapi import FastAPI, WebSocket, APIRouter, BackgroundTasks, UploadFile, File, HTTPException
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.staticfiles import StaticFiles
@@ -15,8 +16,6 @@ from websockets_proxy import Proxy, proxy_connect
 from fake_useragent import UserAgent
 import re
 
-from app.utils import add_nstproxy_appid, validate_user_id, validate_proxy_url
-
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -25,6 +24,34 @@ user_agent = UserAgent()
 nstProxyAppId = "F680F8381EB0D52B"
 all_clients: Dict[str, asyncio.Task] = {}
 
+# 定义用户请求的数据模型
+class ClientData(BaseModel):
+    user_id: str
+    proxy_url: Optional[str] = None
+
+# 验证代理 URL 格式
+def validate_proxy_url(proxy_url: str) -> bool:
+    pattern = r"^(http|https|socks5)://[^:@\s]+:[^:@\s]+@[\d\.]+:\d+$"
+    return bool(re.match(pattern, proxy_url))
+
+# 验证用户 ID 格式
+def validate_user_id(user_id: str) -> bool:
+    pattern = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    return bool(re.match(pattern, user_id))
+
+# 添加 nstproxy appid 到代理用户名
+def add_nstproxy_appid(proxy: str) -> str:
+    if "nstproxy." in proxy:
+        pattern = r"^(?:[^:]+)://([^:]+):[^@]+@"
+        match = re.match(pattern, proxy)
+        if match:
+            username = match.group(1)
+            if "appId" not in username:
+                new_username = f"{username}-appid_{nstProxyAppId}"
+                proxy = proxy.replace(username, new_username)
+    return proxy
+
+# 建立 WebSocket 连接
 async def connect_to_wss(socks5_proxy, user_id):
     device_id = str(uuid.uuid3(uuid.NAMESPACE_DNS, socks5_proxy))
     custom_headers = {"User-Agent": user_agent.random}
@@ -32,8 +59,8 @@ async def connect_to_wss(socks5_proxy, user_id):
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    uriList = ["wss://proxy.wynd.network:4444/", "wss://proxy.wynd.network:4650/"]
-    uri = random.choice(uriList)
+    uri_list = ["wss://proxy.wynd.network:4444/", "wss://proxy.wynd.network:4650/"]
+    uri = random.choice(uri_list)
     proxy = Proxy.from_url(socks5_proxy)
     server_hostname = "proxy.wynd.network"
 
@@ -75,7 +102,10 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/client/")
-async def add_client(user_id: str, proxy_url: str, background_tasks: BackgroundTasks):
+async def add_client(client_data: ClientData, background_tasks: BackgroundTasks):
+    user_id = client_data.user_id
+    proxy_url = client_data.proxy_url
+
     if not validate_user_id(user_id):
         return {"error": "Invalid user ID format"}
     if proxy_url and not validate_proxy_url(proxy_url):
