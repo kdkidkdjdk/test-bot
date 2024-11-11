@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Proxy Manager</title>
+    <script>
+        async function addProxies() {
+            const proxies = document.getElementById("proxyList").value.split("\n");
+            const response = await fetch("/add_proxies", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({proxies})
+            });
+            const result = await response.json();
+            alert(`Added ${result.total_proxies} proxies`);
+        }
+
+        async function startConnections() {
+            await fetch("/start_connections");
+            updateStatus();
+        }
+
+        async function updateStatus() {
+            const response = await fetch("/status");
+            const result = await response.json();
+            document.getElementById("total").innerText = result.total;
+            document.getElementById("connected").innerText = result.connected;
+            document.getElementById("failed").innerText = result.failed;
+
+            let list = document.getElementById("statusList");
+            list.innerHTML = "";
+            for (const [proxy, status] of Object.entries(result.connections)) {
+                const item = document.createElement("li");
+                item.textContent = `${proxy}: ${status}`;
+                list.appendChild(item);
+            }
+        }
+
+        setInterval(updateStatus, 5000);
+    </script>
+</head>
+<body>
+    <h1>Proxy Manager</h1>
+    <textarea id="proxyList" placeholder="Enter proxies in 'user_id--proxy_url' format"></textarea>
+    <button onclick="addProxies()">Add Proxies</button>
+    <button onclick="startConnections()">Start Connections</button>
+    <h2>Status</h2>
+    <p>Total: <span id="total">0</span></p>
+    <p>Connected: <span id="connected">0</span></p>
+    <p>Failed: <span id="failed">0</span></p>
+    <ul id="statusList"></ul>
+</body>
+</html>
