@@ -1,12 +1,10 @@
 version: '3.8'
 
 services:
-  fastapi_app:
+  getgrasswebui:
     build: .
-    container_name: fastapi_app_container
+    container_name: getgrass_webui
     ports:
-      - "8000:8000"  # 映射端口
+      - "8000:8000"
     volumes:
-      - ./proxies.txt:/app/proxies.txt  # 挂载代理文件
-      - ./getgrassDesktopBot.py:/app/getgrassDesktopBot.py  # 挂载Python脚本
-    restart: unless-stopped
+      - ./app/account.txt:/app/account.txt
