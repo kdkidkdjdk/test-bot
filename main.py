@@ -1,4 +1,4 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, File, UploadFile
 from fastapi.responses import HTMLResponse
 import asyncio
 import os
@@ -36,5 +36,12 @@ async def stop_connection():
         task.cancel()
     connections.clear()
     for account in accounts:
-        account["status"] = "已断开"}
+        account["status"] = "已断开"
     return {"status": "连接已停止"}
+
+@app.post("/uploadfile/")
+async def upload_file(file: UploadFile = File(...)):
+    file_location = f"/app/{file.filename}"
+    with open(file_location, "wb") as buffer:
+        buffer.write(await file.read())
+    return {"info": f"文件 '{file.filename}' 已上传至 {file_location}"}
