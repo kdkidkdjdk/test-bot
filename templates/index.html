@@ -2,30 +2,16 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GetGrass WebUI</title>
     <link rel="stylesheet" href="/static/index.css">
 </head>
 <body>
-    <div class="title">
-        <h2>GetGrass WebUI - <span class="status" id="onlineCount">0</span>/<span id="allCount">0</span></h2>
-        <button onclick="addUser()">添加账号</button>
-        <button onclick="deleteAllUsers()">清空账号</button>
-        <button onclick="uploadFile()">上传文件</button>
-    </div>
+    <h2>GetGrass WebUI</h2>
+    <button onclick="addUser()">添加账号</button>
+    <button onclick="clearClients()">清空账号</button>
+    <button onclick="uploadFile()">上传文件</button>
     <table id="data-table">
-        <thead>
-            <tr>
-                <th>编号</th>
-                <th>UserID</th>
-                <th>代理</th>
-                <th>状态</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- 动态添加内容 -->
-        </tbody>
+        <tr><th>UserID</th><th>代理</th><th>状态</th></tr>
     </table>
     <script src="/static/index.js"></script>
 </body>
